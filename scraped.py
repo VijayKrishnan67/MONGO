@@ -43,10 +43,13 @@ def scrape_tradingview():
     from webdriver_manager.chrome import ChromeDriverManager
     
     chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in headless mode
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # Unique directory for user data
+    chrome_options.add_argument("--remote-debugging-port=9222") 
     
     # Automatically install the correct ChromeDriver version
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
