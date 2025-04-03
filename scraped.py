@@ -37,13 +37,20 @@ def connect_mongo():
 def scrape_tradingview():
     """Scrape stock data from TradingView Market Movers"""
 
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver.chrome.options import Options
+    from webdriver_manager.chrome import ChromeDriverManager
+    
     chrome_options = Options()
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-
+    
+    # Automatically install the correct ChromeDriver version
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
     url = "https://www.tradingview.com/markets/stocks-usa/market-movers-large-cap/"
     driver.get(url)
 
