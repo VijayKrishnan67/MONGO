@@ -100,7 +100,7 @@ def update_mongodb(data):
         collection.insert_many(data)
         print("Data successfully inserted into MongoDB.")
 
-if _name_ == "_main_":
-    stock_data = scrape_tradingview()
-    if stock_data:
-        update_mongodb(stock_data)
+
+stock_data = scrape_tradingview()
+if stock_data:
+    update_mongodb(stock_data)
