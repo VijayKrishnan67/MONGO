@@ -10,13 +10,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from pymongo import MongoClient
 
-# MongoDB Atlas Connection URI (Replace with your credentials)
+# MongoDB Atlas Connection URI (Replace with your credentials or use environment variable)
 MONGO_URI = os.getenv("MONGO_URI")
 DATABASE_NAME = "stock_data"
 COLLECTION_NAME = "market_movers"
-
+print("exist")
 def clean_number(value):
-    """Convert numbers with suffixes like T (trillion), B (billion), M (million), K (thousand) to float"""
+    """Convert numbers with suffixes like T, B, M, K to float"""
     value = value.replace("\u202f", "").replace(",", "")  # Remove non-breaking spaces and commas
 
     if "T" in value:
@@ -27,7 +27,7 @@ def clean_number(value):
         return float(value.replace("M", "")) * 1e6
     elif "K" in value:
         return float(value.replace("K", "")) * 1e3
-    return float(value)  # Default case
+    return float(value)
 
 def connect_mongo():
     """Connect to MongoDB Atlas"""
@@ -37,23 +37,13 @@ def connect_mongo():
 def scrape_tradingview():
     """Scrape stock data from TradingView Market Movers"""
 
-    from selenium import webdriver
-    from selenium.webdriver.chrome.service import Service
-    from selenium.webdriver.chrome.options import Options
-    from webdriver_manager.chrome import ChromeDriverManager
-    
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # Unique directory for user data
-    chrome_options.add_argument("--remote-debugging-port=9222") 
-    
-    # Automatically install the correct ChromeDriver version
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     url = "https://www.tradingview.com/markets/stocks-usa/market-movers-large-cap/"
     driver.get(url)
 
@@ -77,7 +67,7 @@ def scrape_tradingview():
             if len(columns) < 5:
                 continue
 
-            name = columns[0].text.split("\n")[0]  
+            name = columns[0].text.split("\n")[0]
             raw_price = columns[1].text.strip()
             raw_change = columns[2].text.strip()
             raw_percent_change = columns[3].text.strip()
@@ -104,17 +94,13 @@ def scrape_tradingview():
     return data
 
 def update_mongodb(data):
-    """Insert or update stock data in MongoDB"""
+    """Insert stock data into MongoDB without checking for existing entries"""
     collection = connect_mongo()
-    for stock in data:
-        collection.update_one(
-            {"name": stock["name"]},  # Match by stock name
-            {"$set": stock},  # Update fields
-            upsert=True  # Insert if not found
-        )
-    print("Data successfully updated in MongoDB.")
+    if data:
+        collection.insert_many(data)
+        print("Data successfully inserted into MongoDB.")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     stock_data = scrape_tradingview()
     if stock_data:
         update_mongodb(stock_data)
