@@ -1,29 +1,27 @@
-name: Scrape TradingView Stocks
+name: TradingView Scraper
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # Runs every 10 minutes
-  workflow_dispatch:  # Allows manual triggering
+    - cron: '*/10 * * * *'  # Every 10 minutes UTC
+  workflow_dispatch:        # Manual trigger from GitHub UI
 
 jobs:
-  scrape:
+  run-scraper:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install selenium webdriver-manager pymongo
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-      - name: Run Scraper
+      - name: Run scraper
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: python scraped.py
+        run: python tradingview_scraper.py
